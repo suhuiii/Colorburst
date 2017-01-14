@@ -6,7 +6,6 @@ var spots = [];
 var color_spread_radius = 50;
 var color_leech_rate = 0.5;
 var randomPixels = [];
-var timerToRadians = 2 * Math.PI / 900;
 var donePainting = false;
 var pixelCounter = 0;
 var new_x = 0;
@@ -17,7 +16,7 @@ function preload() {
   pixelDensity(1);
   if (debug || !navigator.onLine) {
     var your_image_filename = "default.jpg"  } else {
-    var your_image_filename = "https://source.unsplash.com/random/" + windowWidth + "x" + windowHeight;
+    var your_image_filename = "https://source.unsplash.com/random/" + windowWidth/2 + "x" + windowHeight/2;
   }
   //var your_image_filename = "test.jpg";
   color_img = loadImage(your_image_filename);
@@ -37,21 +36,16 @@ function setup() {
   pg.image(grayPix, 0, 0, windowWidth, windowHeight);
 
   noFill();
-  //image(color_img, 0, 0, windowWidth, windowHeight);
-  //loadPixels();
-  //console.log(pixels.length);
-  //console.log(windowWidth + ", " + windowHeight);
-  //window.color_pixels = pixels;
 
   pixelCounter = windowWidth * windowHeight;
 
   frameRate(30);
 
-  // for (var i = 0; i < pixelCounter; i++) {
-  //   randomPixels[i] = i;
-  // }
+  for (var i = 0; i < pixelCounter; i++) {
+     randomPixels[i] = i;
+  }
 
-  // randomPixels = shuffle(randomPixels);
+  randomPixels = shuffle(randomPixels);
 }
 
 //Each draw event clears the canvas and updates each Droplet
@@ -60,7 +54,7 @@ function draw() {
   clear();
 
   switch(timer){
-    case 0: rate = 80;
+    case 0: rate = 80; timestep = 1;
     case 100: rate = 70;
     case 250: rate = 60; break;
     case 500: rate = 30; break;
@@ -72,7 +66,7 @@ function draw() {
 
   // create a new random droplet
   if (timer % rate === 0) {
-    if (!donePainting) {
+    if (donePainting) {
       new_x = Math.floor(random(windowWidth) / 4) * 4
       new_y = Math.floor(random(windowHeight) / 4) * 4;
     } else {
@@ -83,7 +77,7 @@ function draw() {
           donePainting = true;
           break;
         }
-        if (pg.pixels[randIndex * 4] != window.pixels[randIndex * 4] || pg.pixels[randIndex * 4 + 1] != window.pixels[randIndex * 4 + 1] || pg.pixels[randIndex * 4 + 2] != window.pixels[randIndex * 4 + 2]) {
+        if (pg.pixels[randIndex * 4 + 3] != 0) {
           break;
         }
       }
@@ -200,7 +194,7 @@ function mousePressed() {
 function Droplet(x, y) {
   var curr_wid = 0;
   var curr_hei = 0;
-  var max_wid = 150;
+  var max_wid = 100;
   var finished = false;
   var echos = [];
 
@@ -213,7 +207,7 @@ function Droplet(x, y) {
   this.drip = function () {
     if (curr_wid < max_wid) {
       strokeWeight(2);
-      stroke(255, max_wid - curr_wid);
+      stroke(100, max_wid - curr_wid);
       ellipse(x, y, curr_wid, curr_hei);
       curr_wid++;
       curr_hei++;
@@ -224,16 +218,16 @@ function Droplet(x, y) {
       var my_echo = new Echo(x, y, max_wid, false);
       echos.push(my_echo);
     }
-    if (curr_wid == 20) {
+    if (curr_wid == 25) {
       var my_echo = new Echo(x, y, max_wid, false);
       echos.push(my_echo);
     }
 
-    if (curr_wid == 70) {
+    if (curr_wid == 50) {
       var my_echo = new Echo(x, y, 100, false);
       echos.push(my_echo);
     }
-    if (curr_wid == 80) {
+    if (curr_wid == 70) {
       var my_echo = new Echo(x, y, 100, false);
       echos.push(my_echo);
     }
