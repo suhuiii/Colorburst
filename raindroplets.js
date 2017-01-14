@@ -5,41 +5,53 @@ var rate = 90;
 var spots = [];
 var color_spread_radius = 50;
 var color_leech_rate = 0.5;
-// var your_image_filename = "https://unsplash.it/"+windowWidth+"/"+windowHeight+"/?random";
-
+var randomPixels = [];
 var timerToRadians = 2 * Math.PI / 900;
-
+var donePainting = false;
+var pixelCounter = 0;
+var new_x = 0;
+var new_y = 0;
+var debug = false;
 
 function preload() {
   pixelDensity(1);
-  var your_image_filename = "https://source.unsplash.com/random/" + windowWidth + "x" + windowHeight;
-  //var your_image_filename = "flower_dance_girl_color.png";
+  if (debug || !navigator.onLine) {
+    var your_image_filename = "default.jpg"  } else {
+    var your_image_filename = "https://source.unsplash.com/random/" + windowWidth + "x" + windowHeight;
+  }
+  //var your_image_filename = "test.jpg";
   color_img = loadImage(your_image_filename);
-  //color_img = loadImage("bend.jpg");
-  //my_img = createImg("bend.jpg");
   my_img = createImg(your_image_filename);
   my_img.size(windowWidth, windowHeight);
-  my_img.style('filter', 'grayscale(1)');
   my_img.style('z-index', '-1');
   my_img.style('position', '0');
 }
 
 function setup() {
   canvas = createCanvas(windowWidth, windowHeight);
-  pg = createGraphics(windowWidth, windowHeight);
-  noFill();
   image(color_img, 0, 0, windowWidth, windowHeight);
-  loadPixels();
-  console.log(pixels.length);
-  console.log(windowWidth + ", " + windowHeight);
-  window.color_pixels = pixels;
-  window.rowLength = windowWidth * 4;
-  window.columnLength = windowHeight * pixelDensity();
-  //this is the size of the pixel array.
-  window.pixel_len = window.rowLength * window.columnLength;
-  console.log(window.pixel_len);
+  filter(GRAY);
+  var grayPix = get();
+
+  pg = createGraphics(windowWidth, windowHeight);
+  pg.image(grayPix, 0, 0, windowWidth, windowHeight);
+
+  noFill();
+  //image(color_img, 0, 0, windowWidth, windowHeight);
+  //loadPixels();
+  //console.log(pixels.length);
+  //console.log(windowWidth + ", " + windowHeight);
+  //window.color_pixels = pixels;
+
+  pixelCounter = windowWidth * windowHeight;
+
   frameRate(30);
 
+  // for (var i = 0; i < pixelCounter; i++) {
+  //   randomPixels[i] = i;
+  // }
+
+  // randomPixels = shuffle(randomPixels);
 }
 
 //Each draw event clears the canvas and updates each Droplet
@@ -47,43 +59,45 @@ function draw() {
   //clear your palette, er, canvas;
   clear();
 
-  //increase pace of rain: manual version
-  if (timer == 360) {
-    rate = 60;
-  }
-  if (timer == 450) {
-    rate = 60;
-    if (timestep == -1) {
-      color_spread_radius = 100;
-    }
-  }
-  if (timer == 690) {
-    rate = 30;
-  }
-  if (timer == 720) {
-    rate = 20;
-  }
+  switch(timer){
+    case 0: rate = 80;
+    case 100: rate = 70;
+    case 250: rate = 60; break;
+    case 500: rate = 30; break;
+    case 720: rate = 10; break;
+    case 800: rate = 5; break;
+    case 1000: timestep = -1; break;
 
-  if (timer == 1000) {
-    timestep = -1;
   }
-  if ((timer == 0 & timestep == -1)) {
-    //reverse pacing
-    timestep = 0;
-  }
-
 
   // create a new random droplet
   if (timer % rate === 0) {
+    if (!donePainting) {
+      new_x = Math.floor(random(windowWidth) / 4) * 4
+      new_y = Math.floor(random(windowHeight) / 4) * 4;
+    } else {
 
-    var new_x = Math.floor(random(windowWidth) / 4) * 4
-    var new_y = Math.floor(random(windowHeight) / 4) * 4;
+      while (true) {
+        var randIndex = randomPixels[--pixelCounter];
+        if (pixelCounter < 0) {
+          donePainting = true;
+          break;
+        }
+        if (pg.pixels[randIndex * 4] != window.pixels[randIndex * 4] || pg.pixels[randIndex * 4 + 1] != window.pixels[randIndex * 4 + 1] || pg.pixels[randIndex * 4 + 2] != window.pixels[randIndex * 4 + 2]) {
+          break;
+        }
+      }
+
+      var randXYArr = indexToSub(randIndex);
+      new_x = randXYArr[0];
+      new_y = randXYArr[1];
+    }
+
     me = new Droplet(new_x, new_y);
     pushToArray(DropletArray, me);
 
-
     //only start coloring if this area has not already been colored (efficiency);
-    if (pg.pixels[window.loc] != pixels[window.loc]) {
+    if (!donePainting) {
       pushToArray(spots, [0, 0, new_x, new_y]);
     }
   }
@@ -141,33 +155,39 @@ function draw() {
 
 function paintCircle(radius, prev_radius, cent_x, cent_y) {
   //consider points for square centered at mouse position with size = radius of circle
-  for (var y = floor(cent_y - radius); y < ceil(cent_y + radius); y++) {
-    for (var x = floor(cent_x - radius); x < ceil(cent_x + radius); x++) {
+  var sqRadius = sq(radius);
+  var sqPrevRadius = sq(prev_radius);
+  for (var y = floor(cent_y - radius); y < cent_y + radius; y++) {
+    for (var x = floor(cent_x - radius); x < cent_x + radius; x++) {
       // some optimizations in painting of circles
       // - paint only if not already painted (i.e. alpha channel != 0)
       // - paint only new section of circle that has increased from previous circle  
       var thisIndex = subToIndex(x, y) * 4;
       sq_dist = sqDistFromCenter(cent_x, cent_y, x, y);
-
-      if (sq_dist <= sq(radius) && sq_dist >= sq(prev_radius) ) {
-        pg.pixels[thisIndex ] = window.color_pixels[thisIndex];
-        pg.pixels[thisIndex + 1] = window.color_pixels[thisIndex+1];
-        pg.pixels[thisIndex + 2] = window.color_pixels[thisIndex+2];
-        pg.pixels[thisIndex + 3] = window.color_pixels[thisIndex+3];
+      if (sq_dist <= sqRadius && sq_dist >= sqPrevRadius) {
+        // pg.pixels[thisIndex] = window.color_pixels[thisIndex];
+        // pg.pixels[thisIndex + 1] = window.color_pixels[thisIndex + 1];
+        // pg.pixels[thisIndex + 2] = window.color_pixels[thisIndex + 2];
+        pg.pixels[thisIndex + 3] = 0;//window.color_pixels[thisIndex + 3];
       }
     }
   }
 
 }
 function sqDistFromCenter(center_x, center_y, x, y) {
-    //this function returns the square distance of the x,y coordinate from the center
-    square_dist = sq(center_x - x) + sq(center_y - y);
-    return square_dist;
+  //this function returns the square distance of the x,y coordinate from the center
+  square_dist = sq(center_x - x) + sq(center_y - y);
+  return square_dist;
 }
-function subToIndex(x, y){
-    //this function returns an index value of the pixel array given an x,y coordinate
-	return x + (windowWidth * y); 
+function subToIndex(x, y) {
+  //this function returns an index value of the pixel array given an x,y coordinate
+  return x + (windowWidth * y);
 }
+
+function indexToSub(index) {
+  return [index % windowWidth, Math.floor(index / windowWidth)]
+}
+
 //Create a Droplet at Mouse location on click
 function mousePressed() {
   var me = new Droplet(mouseX, mouseY);
