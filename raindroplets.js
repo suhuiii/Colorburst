@@ -11,40 +11,71 @@ var pixelCounter = 0;
 var new_x = 0;
 var new_y = 0;
 var debug = false;
+var weatherJSON;
+var skycons = new Skycons();
 
 function preload() {
   pixelDensity(1);
-  if (debug || !navigator.onLine) {
-    var your_image_filename = "default.jpg"  } else {
-    var your_image_filename = "https://source.unsplash.com/random/" + windowWidth/2 + "x" + windowHeight/2;
+
+  //use default picture for debugging and if offline
+  if (!navigator.onLine || debug) {
+    var your_image_filename = "default.jpg"
+  } else {
+    navigator.geolocation.getCurrentPosition(function (position) {
+    weatherJSON = loadJSON("https://api.darksky.net/forecast/fb84b7be987050c793dd703b0410d867/"+ position.coords.latitude + "," + position.coords.longitude + "?exclude=minutely,hourly,daily,alerts");
+    });
+    var your_image_filename = "https://source.unsplash.com/random/" + floor(windowWidth / 2) + "x" + floor(windowHeight / 2);
+    
   }
-  //var your_image_filename = "test.jpg";
-  color_img = loadImage(your_image_filename);
-  my_img = createImg(your_image_filename);
-  my_img.size(windowWidth, windowHeight);
-  my_img.style('z-index', '-1');
-  my_img.style('position', '0');
+  //image that is colored in
+  img = loadImage(your_image_filename);
+  //image that is in background and gradually exposed
+  bg_img = createImg(your_image_filename);
+  bg_img.size(windowWidth, windowHeight);
+  bg_img.style('z-index', '-1');
+  bg_img.style('position', '0');
+
+
 }
 
 function setup() {
+  //filter function does not work on graphics buffer
+  //workaround by drawing image on main canvas, filter it to greyscale and copying the pixels.
   canvas = createCanvas(windowWidth, windowHeight);
-  image(color_img, 0, 0, windowWidth, windowHeight);
+  image(img, 0, 0, windowWidth, windowHeight);
   filter(GRAY);
+  loadPixels();
   var grayPix = get();
 
+  //load greyscale image onto graphics buffer.
   pg = createGraphics(windowWidth, windowHeight);
   pg.image(grayPix, 0, 0, windowWidth, windowHeight);
 
-  noFill();
+  if(weatherJSON){
+    if((pixels[windowWidth*4]+pixels[windowWidth*4+1]+pixels[windowWidth*4+2])<380 ){
+      document.getElementById("top-right").style.color = "white";
+      skycons = new Skycons({"color": "white"});
+    }
 
-  pixelCounter = windowWidth * windowHeight;
+    var re = /(\w+)\/(\w+)/;
+    var loc = weatherJSON["timezone"].replace(re, '$2');
+    locationlabel.textContent = loc.replace("_", " ");
+    tempNumber.textContent = weatherJSON["currently"]["temperature"] + "°";
+    tempUnits.textContent = weatherJSON["flags"]["units"] == "si" ? "C":"F";
+    skycons.add("weathericon", weatherJSON["currently"]["icon"]);
+    skycons.play();
+  }
+
+  noFill();
 
   frameRate(30);
 
-  for (var i = 0; i < pixelCounter; i++) {
-     randomPixels[i] = i;
+  //create an array of random pixels which we can use to progressively color in the image
+  //ensures that whole image gets colored in rather than checking random points to see if it has been colored. 
+  pixelCounter = windowWidth * windowHeight;
+  for (var i = 0; i < pixelCounter; i += 2) {
+    randomPixels[i] = i;
   }
-
   randomPixels = shuffle(randomPixels);
 }
 
@@ -53,10 +84,10 @@ function draw() {
   //clear your palette, er, canvas;
   clear();
 
-  switch(timer){
-    case 0: rate = 80; timestep = 1;
-    case 100: rate = 70;
-    case 250: rate = 60; break;
+  switch (timer) {
+    case 0: rate = 40; timestep = 1; break;
+    case 100: rate = 70; break;
+    case 250: rate = 50; break;
     case 500: rate = 30; break;
     case 720: rate = 10; break;
     case 800: rate = 5; break;
@@ -64,19 +95,22 @@ function draw() {
 
   }
 
-  // create a new random droplet
+  // get an X,Y coordinate
   if (timer % rate === 0) {
     if (donePainting) {
+      //whole area is painted, so doesn't matter what is picked
       new_x = Math.floor(random(windowWidth) / 4) * 4
       new_y = Math.floor(random(windowHeight) / 4) * 4;
     } else {
-
+      //otherwise, loop through array of random pixels and find one that hasn't been painted
       while (true) {
         var randIndex = randomPixels[--pixelCounter];
         if (pixelCounter < 0) {
           donePainting = true;
           break;
         }
+        //Each index location translates to 4 channels for RGBA. 
+        //Here we are checking the A channel to see if it is set to 0 (transparent)
         if (pg.pixels[randIndex * 4 + 3] != 0) {
           break;
         }
@@ -87,11 +121,12 @@ function draw() {
       new_y = randXYArr[1];
     }
 
+    //create a new Droplet(wave) and/or Spot(colored area)
     me = new Droplet(new_x, new_y);
     pushToArray(DropletArray, me);
 
-    //only start coloring if this area has not already been colored (efficiency);
     if (!donePainting) {
+      //color spot only if not done painting.
       pushToArray(spots, [0, 0, new_x, new_y]);
     }
   }
@@ -103,16 +138,7 @@ function draw() {
 
   pg.loadPixels();
 
-  //find surrounding pixels in a square with radius 4 - recall each 
-  //pixel has its info stored in 4 consecutive array cells;
-  // LUL THE 'A' IN RGBA STANDS FOR ALPHA AS IN ALPHA CHANNEL...TRANSPARENCY
-  // GO ahead and make this code much more efficient if you want by just laying the
-  // color image on top of the gray image and changing the alpha channel value... 
-  // but I'm done with this for now.
-
-  //Colors in the pixels of a circle surrounding the origin of a droplet.
-  //The radius to be filled in increases with each timestep by color_leech_rate, so that 
-
+  //paint a circle for each spot if they are not at full size
   for (var index = 0; index < spots.length; index++) {
     if (spots[index] != undefined) {
       var radius = spots[index][0];
@@ -132,8 +158,10 @@ function draw() {
   }
   //pg.updatePixels() loads the pixel array into the graphics buffer. Image()
   //loads the graphics buffer pg onto the main canvas.
-  pg.updatePixels();
-  image(pg, 0, 0);
+  if (!donePainting) {
+    pg.updatePixels();
+    image(pg, 0, 0);
+  }
 
   //updates droplets.
   for (var i = 0; i < DropletArray.length; i++) {
@@ -155,14 +183,12 @@ function paintCircle(radius, prev_radius, cent_x, cent_y) {
     for (var x = floor(cent_x - radius); x < cent_x + radius; x++) {
       // some optimizations in painting of circles
       // - paint only if not already painted (i.e. alpha channel != 0)
-      // - paint only new section of circle that has increased from previous circle  
+      // - paint only new section of circle that has increased from previous circle. i.e. rings from the center
       var thisIndex = subToIndex(x, y) * 4;
       sq_dist = sqDistFromCenter(cent_x, cent_y, x, y);
       if (sq_dist <= sqRadius && sq_dist >= sqPrevRadius) {
-        // pg.pixels[thisIndex] = window.color_pixels[thisIndex];
-        // pg.pixels[thisIndex + 1] = window.color_pixels[thisIndex + 1];
-        // pg.pixels[thisIndex + 2] = window.color_pixels[thisIndex + 2];
-        pg.pixels[thisIndex + 3] = 0;//window.color_pixels[thisIndex + 3];
+        //make A channel 0 (transparent).
+        pg.pixels[thisIndex + 3] = 0;
       }
     }
   }
@@ -179,6 +205,7 @@ function subToIndex(x, y) {
 }
 
 function indexToSub(index) {
+  //this function returns a x,y coordinate given an index value.
   return [index % windowWidth, Math.floor(index / windowWidth)]
 }
 
@@ -186,7 +213,7 @@ function indexToSub(index) {
 function mousePressed() {
   var me = new Droplet(mouseX, mouseY);
   pushToArray(DropletArray, me);
-  window.loc = (window.rowLength * mouseY) + (mouseX * 4);
+
   pushToArray(spots, [0, 0, mouseX, mouseY]);
 }
 
@@ -207,52 +234,22 @@ function Droplet(x, y) {
   this.drip = function () {
     if (curr_wid < max_wid) {
       strokeWeight(2);
-      stroke(100, max_wid - curr_wid);
+      stroke(180, max_wid - curr_wid);
       ellipse(x, y, curr_wid, curr_hei);
       curr_wid++;
       curr_hei++;
     }
 
-    //Create secondary perturbations at certain points...
-    if (curr_wid == 10) {
-      var my_echo = new Echo(x, y, max_wid, false);
-      echos.push(my_echo);
-    }
-    if (curr_wid == 25) {
-      var my_echo = new Echo(x, y, max_wid, false);
-      echos.push(my_echo);
+    switch (curr_wid) {
+      case 10:
+      case 25: var my_echo = new Echo(x, y, max_wid, false);
+        echos.push(my_echo);
+        break;
+      case 50:
+      case 70: var my_echo = new Echo(x, y, 100, false);
+        echos.push(my_echo);
     }
 
-    if (curr_wid == 50) {
-      var my_echo = new Echo(x, y, 100, false);
-      echos.push(my_echo);
-    }
-    if (curr_wid == 70) {
-      var my_echo = new Echo(x, y, 100, false);
-      echos.push(my_echo);
-    }
-    /*
-    if (curr_wid == 140) {
-      var my_echo = new Echo(x, y, max_wid, false);
-      echos.push(my_echo);
-    }
-    if (curr_wid == 145) {
-      var my_echo = new Echo(x, y, max_wid, false);
-      echos.push(my_echo);
-    }
-    if (curr_wid == 180) {
-      var my_echo = new Echo(x, y, max_wid, false);
-      echos.push(my_echo);
-    }
-    if (curr_wid == 190) {
-      var my_echo = new Echo(x, y, max_wid, false);
-      echos.push(my_echo);
-    }
-    if (curr_wid == 195) {
-      var my_echo = new Echo(x, y, max_wid, true);
-      echos.push(my_echo);
-    }
-    */
     for (var i = 0; i < echos.length; i++) {
       var echo_done = echos[i].echo();
       if (echo_done == true) {
@@ -291,12 +288,4 @@ function pushToArray(array, object) {
   }
   array.push(object);
   return;
-}
-
-function multFour(num) {
-  for (var i = 0; i < 4; i++) {
-    if ((num + i) % 4 == 0) {
-      return (num + i);
-    }
-  }
 }

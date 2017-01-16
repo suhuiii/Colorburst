@@ -2,25 +2,24 @@
 
 <head>
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="newTab.css">
     <script language="javascript" type="text/javascript" src="p5.js"></script>
+    <script language="javascript" type="text/javascript" src="skycons.js"></script>
     <script language="javascript" src="p5.dom.js"></script>
     <script language="javascript" type="text/javascript" src="raindroplets.js"></script>
-
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
     <style> body {padding: 0; margin: 0;} </style>
 </head>
 
 <body>
-    <!--<div id="search">
-        <form method="get" action="http://www.google.com" target="_blank">
-            <div style="border:0px solid black;padding:2px;width:20em;">
-<table border="0" cellpadding="0">
-    <tr>
-        <td>
-            <input type="text" name="q" size="25" maxlength="255" value="" <textarea placeholder="Search Google"></textarea>
-            <input type="submit" value="Search" /></td>
-    </tr>
-</table>
-</div>-->
+    <div id="top-right" class="top-right">
+        <div id="weather" class="weather" style="opacity: 1;">
+            <canvas id="weathericon" width="64" height="64"></canvas>
+            <span id="tempNumber"></span>
+            <span id="tempUnits"></span>
+        </div>
+    <span id="locationlabel"></span>
+</div></div>
 </body>
 
 </html>
