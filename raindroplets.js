@@ -12,7 +12,7 @@ var new_x = 0;
 var new_y = 0;
 var debug = false;
 var weatherJSON;
-var skycons = new Skycons();
+skycons = new Skycons({ "color": "#020202" });
 
 function preload() {
   pixelDensity(1);
@@ -21,12 +21,12 @@ function preload() {
   if (!navigator.onLine || debug) {
     var your_image_filename = "default.jpg"
   } else {
-    navigator.geolocation.getCurrentPosition(function (position) {
-    weatherJSON = loadJSON("https://api.darksky.net/forecast/fb84b7be987050c793dd703b0410d867/"+ position.coords.latitude + "," + position.coords.longitude + "?exclude=minutely,hourly,daily,alerts");
-    });
-    var your_image_filename = "https://source.unsplash.com/random/" + floor(windowWidth / 2) + "x" + floor(windowHeight / 2);
-    
+    updateWeather();
+    var your_image_filename = "https://source.unsplash.com/random/" + floor(windowWidth) + "x" + floor(windowHeight);
   }
+  //get a new update every 10 mins
+  setInterval(updateWeather, 600000);
+
   //image that is colored in
   img = loadImage(your_image_filename);
   //image that is in background and gradually exposed
@@ -51,17 +51,14 @@ function setup() {
   pg = createGraphics(windowWidth, windowHeight);
   pg.image(grayPix, 0, 0, windowWidth, windowHeight);
 
-  if(weatherJSON){
-    if((pixels[windowWidth*4]+pixels[windowWidth*4+1]+pixels[windowWidth*4+2])<380 ){
-      document.getElementById("top-right").style.color = "white";
-      skycons = new Skycons({"color": "white"});
-    }
+  if (weatherJSON) {
+    var testPixelLocation = (windowWidth - 1) * 4;
 
     var re = /(\w+)\/(\w+)/;
     var loc = weatherJSON["timezone"].replace(re, '$2');
     locationlabel.textContent = loc.replace("_", " ");
     tempNumber.textContent = weatherJSON["currently"]["temperature"] + "°";
-    tempUnits.textContent = weatherJSON["flags"]["units"] == "si" ? "C":"F";
+    tempUnits.textContent = weatherJSON["flags"]["units"] == "si" ? "C" : "F";
     skycons.add("weathericon", weatherJSON["currently"]["icon"]);
     skycons.play();
   }
@@ -81,7 +78,8 @@ function setup() {
 
 //Each draw event clears the canvas and updates each Droplet
 function draw() {
-  //clear your palette, er, canvas;
+
+  //clear canvas
   clear();
 
   switch (timer) {
@@ -288,4 +286,15 @@ function pushToArray(array, object) {
   }
   array.push(object);
   return;
+}
+
+function updateWeather() {
+  if (navigator.onLine) {
+    console.log
+    console.log(hour() + ":" + minute() + " - getting new weather update...");
+    navigator.geolocation.getCurrentPosition(function (position) {
+      weatherJSON = loadJSON("https://api.darksky.net/forecast/fb84b7be987050c793dd703b0410d867/" + position.coords.latitude + "," + position.coords.longitude + "?exclude=minutely,hourly,daily,alerts");
+    });
+    
+  }
 }
