@@ -70,7 +70,7 @@ function setup() {
   //create an array of random pixels which we can use to progressively color in the image
   //ensures that whole image gets colored in rather than checking random points to see if it has been colored. 
   pixelCounter = windowWidth * windowHeight;
-  for (var i = 0; i < pixelCounter; i += 2) {
+  for (var i = 0; i < pixelCounter; i++) {
     randomPixels[i] = i;
   }
   randomPixels = shuffle(randomPixels);
@@ -83,8 +83,8 @@ function draw() {
   clear();
 
   switch (timer) {
-    case 0: rate = 40; timestep = 1; break;
-    case 100: rate = 70; break;
+    case 0: rate = 10; timestep = 1; break;
+    case 100: rate = 30; break;
     case 250: rate = 50; break;
     case 500: rate = 30; break;
     case 720: rate = 10; break;
