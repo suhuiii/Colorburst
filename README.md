@@ -8,10 +8,10 @@ Made at the [Recurse Center](www.recurse.com) with [Ryan Yan](https://github.com
 
 #### Demo Images
 New tab with car  
-[[https://github.com/suhuiii/Colorburst/blob/master/demo-images/colorburst-car.gif|alt=colorburst-car]]
+![Coloring a car](/demo-images/colorburst-car.gif?raw=true)
 
 New tab with camels 
-[[https://github.com/suhuiii/Colorburst/blob/master/demo-images/colorburst-camel.gif|alt=colorburst-camel]]
+![Coloring some camels](/demo-images/colorburst-camel.gif?raw=true)
 
 ## Installation and Usage
 As of this writing, extension is in <em>fully working beta</em> but has not been published on Chrome Store.  
