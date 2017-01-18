@@ -2,11 +2,12 @@
   "manifest_version": 2,
 
   "name": "Raindrops",
-  "description": "This extension loads a random new photo in the new tab in greyscale, which will gradually get colored in.",
-  "version": "1.0",
+  "description": "This extension loads a random new photo from Unsplash in the new tab in greyscale. Image is gradually colored in by simulate rainfall.",
+  "version": "0.1.0",
+  "icons":{"128": "img/colorain_128.png" },
 
   "chrome_url_overrides" : {
-        "newtab": "myPage.html"
+        "newtab": "colorburst.html"
   },
 
   "permissions": [

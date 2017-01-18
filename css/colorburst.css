@@ -1,0 +1,17 @@
+#topRight{
+    position:absolute;
+    top:5px;
+    right:5px;
+    font-family: 'Roboto', sans-serif;
+    font-size: 2.5vh;
+    padding: 10px 10px;
+    border-radius: 15px;
+    background-color: rgba(255,255,255,0.4);
+    color: #020202;
+    visibility: hidden;
+}
+
+#weathericon{
+    width: 4vmax;
+    height: 4vmax;
+}
