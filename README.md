@@ -7,10 +7,8 @@ A Chrome Extension for New Tabs
 Made at the [Recurse Center](www.recurse.com) with [Ryan Yan](https://github.com/apsicle).
 
 #### Demo Images
-New tab with car  
 ![Coloring a car](/demo-images/colorburst-car.gif?raw=true)
 
-New tab with camels 
 ![Coloring some camels](/demo-images/colorburst-camel.gif?raw=true)
 
 ## Installation and Usage
