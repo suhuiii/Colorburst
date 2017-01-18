@@ -1,7 +1,7 @@
 # Colorburst
 A Chrome Extension for New Tabs
 - Replaces tab with a background image taken from [Unsplash](www.unsplash.com).  
-- Background image starts off <em>greyscale</em> and is gradually <strong>colored</strong> with simulate rainfall.  
+- Background image starts off _greyscale_ and is gradually __colored__ with simulate rainfall.  
 - Includes a weather widget powered by [Dark Sky](www.darksky.net) 
 
 Made at the [Recurse Center](www.recurse.com) with [Ryan Yan](https://github.com/apsicle).
@@ -12,7 +12,7 @@ Made at the [Recurse Center](www.recurse.com) with [Ryan Yan](https://github.com
 ![Coloring some camels](/demo-images/colorburst-camel.gif?raw=true)
 
 ## Installation and Usage
-As of this writing, extension is in <em>fully working beta</em> but has not been published on Chrome Store.  
+As of this writing, extension is in _fully working beta<_ but has not been published on Chrome Store.  
 To try it out on your chrome browser, download the folder and follow the instructions [here](https://developer.chrome.com/extensions/getstarted#unpacked)
 
 ## Background 
@@ -27,6 +27,6 @@ Code in this project features improvements in how images get colored and how cir
 
 ### Permissions
 Permissions required on Google Chrome
-1) active tab - replaces new tab
-2) geolocation - to power Dark Sky widget
+1. active tab - replaces new tab
+2. geolocation - to power Dark Sky widget
 
