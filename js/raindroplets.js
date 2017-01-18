@@ -277,7 +277,6 @@ function pushToArray(array, object) {
 
 function updateWeather() {
   if (navigator.onLine) {
-    console.log
     console.log(hour() + ":" + minute() + " - getting new weather update...");
     navigator.geolocation.getCurrentPosition(function (position) {
       weatherJSON = loadJSON("https://api.darksky.net/forecast/fb84b7be987050c793dd703b0410d867/" + position.coords.latitude + "," + position.coords.longitude + "?exclude=minutely,hourly,daily,alerts");

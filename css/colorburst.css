@@ -3,7 +3,7 @@
     top:5px;
     right:5px;
     font-family: 'Roboto', sans-serif;
-    font-size: 2.5vh;
+    font-size: 30px;
     padding: 10px 10px;
     border-radius: 15px;
     background-color: rgba(255,255,255,0.4);
@@ -11,7 +11,22 @@
     visibility: hidden;
 }
 
+#weather{
+    display: flex;
+}
+
 #weathericon{
-    width: 4vmax;
-    height: 4vmax;
+    margin: 2px 15px 2px 10px;
+    display: block;
+    float: left;
+}
+
+#locationlabel{
+    text-align: right;
+    font-size: 25px;
+}
+
+#darkSky{
+    font-size: 10px;
+    text-align: right;
 }
