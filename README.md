@@ -12,7 +12,7 @@ Made at the [Recurse Center](www.recurse.com) with [Ryan Yan](https://github.com
 ![Coloring some camels](/demo-images/colorburst-camel.gif?raw=true)
 
 ## Installation and Usage
-As of this writing, extension is in _fully working beta<_ but has not been published on Chrome Store.  
+As of this writing, extension is in _fully working beta_ but has not been published on Chrome Store.  
 To try it out on your chrome browser, download the folder and follow the instructions [here](https://developer.chrome.com/extensions/getstarted#unpacked)
 
 ## Background 
